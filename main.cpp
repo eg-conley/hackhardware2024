@@ -10,10 +10,10 @@
 //LiquidCrystal_I2C lcd(0x20,16,2); // set the LCD address to 0x20 for a 16 chars and 2 line display
 
 // initialize button pins
-const int moveRedButton;
-const int moveYellowButton;
-const int moveGreenButton;
-const int moveBlueButton;
+const int moveRedButton = 4;
+const int moveYellowButton = 5;
+const int moveGreenButton = 6;
+const int moveBlueButton = 7;
 const int diceButton = 10 ;
 int diceButtonState;
 const int buzzer = 8; //buzzer to arduino pin 8 for victory music 
@@ -85,6 +85,9 @@ class Piece {
         for (int i = 0; i < moveCount; i++)
           moveOne();
       }
+
+
+      
     }
 };
 
@@ -211,7 +214,6 @@ void setup() {
   Piece* Players[numPlayers] = {Red, Yellow, Green, Blue};
   int currPlayerInd = 0; // default starting player is Red
   Piece* currPlayer = Players[currPlayerInd]; // default first player is red
-  
 
   void loop() {
     diceButtonState = digitalRead(diceButton);
@@ -225,7 +227,17 @@ void setup() {
       Serial.println(roll);
 
       currPlayer->takeTurn(roll); // start the player's turn with their roll
-  
+
+      // check all other player pieces and if they are in the same spot
+      int checkIndex = (currPlayerInd + 1) % numPlayers;
+      //cout << "check Index: " << checkIndex << " current Index: " << currIndex << endl;
+      while (currPlayerInd != checkIndex)
+      {
+         currPlayer->checkOverlaps(Players[checkIndex]);
+         checkIndex = (checkIndex + 1) % numPlayers; // increment the checkIndex
+         //cout << "next index to check in while loop: " << checkIndex << endl;
+      }
+
       if (currPlayer->hasWon) {
         Serial.print("Player ");
         Serial.print(currPlayer->colorId);
@@ -235,17 +247,20 @@ void setup() {
 
       // otherwise move to the next player
       currPlayerInd = (currPlayerInd + 1) % numPlayers;
+      currPlayer = Players[currPlayerInd];
       delay (500); // debouncer 
+    }
+
+    // game winning sequence
+      // iterate through to check who won
+      for (int i = 0; i < numPlayers; i++) {
+         if (Players[i]->hasWon == true) {
+          Serial.print("Player ");
+          Serial.print(Players[i]->colorId);
+          Serial.println(" has won!");
+         }
+      }
   }
-
-}
-
-
-
-
-
-
-
 
 
 

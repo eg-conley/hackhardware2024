@@ -140,11 +140,7 @@ void gameSetup() {
       // move to the next Player's turn, looping back to first
       currIndex = (currIndex + 1) % turns.size();
       currPlayerTurn = turns[currIndex];
-    
-      /*if (++turnCount > maxTurns) { // Safeguard
-        cout << "Error: Infinite loop detected. Exiting game." << endl;
-        break;
-      }*/
+      
     }
 
     // game winning sequence

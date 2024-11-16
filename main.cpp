@@ -96,10 +96,11 @@ class Piece {
     }
 
     // this function starts the corresponding Player's turn
-    void takeTurn(int moveCount) {
+    void takeTurn(int rollNum) {
+        int moveCounter = 0; 
       // if the piece is home, need to roll a 6 to get on board
       if (isHome) {
-        if (moveCount == 6) {
+        if (rollNum == 6) {
           isHome = false;
           currPos = startPos; // puts piece on the board
           moveOne();
@@ -107,14 +108,18 @@ class Piece {
       }
       // if the piece is at end, need to roll a 1 to win
       else if (currPos == endPos -1) {
-        if (moveCount == 1) {
+        if (rollNum == 1) {
           hasWon = true;
         }
       }
       // if piece is on board, roll
       else {
-        for (int i = 0; i < moveCount; i++) {
+        for (int i = 0; i < rollNum; i++) {
           moveOne();
+          moveCounter++; 
+          if(rollNum-moveCounter ==1 && currPos == endPos){ 
+            hasWon= true; 
+          }
         }
       }
     }
@@ -261,16 +266,16 @@ void setup() {
       Serial.println(roll);
 
       // wait for correct player to their move press button
-      if (currPlayer->colorId == "red" && digitalRead(moveRedButton) == HIGH) {
+      if (currPlayer->colorId == "red" && digitalRead(moveRedButton) == LOW) {
         currPlayer->takeTurn(roll); // start the player's turn with their roll
       }
-      else if (currPlayer->colorId == "yellow" && digitalRead(moveYellowButton) == HIGH) {
+      else if (currPlayer->colorId == "yellow" && digitalRead(moveYellowButton) == LOW) {
        currPlayer->takeTurn(roll); // start the player's turn with their roll
       }
-      else if (currPlayer->colorId == "green" && digitalRead(moveGreenButton) == HIGH) {
+      else if (currPlayer->colorId == "green" && digitalRead(moveGreenButton) == LOW) {
         currPlayer->takeTurn(roll); // start the player's turn with their roll
       }
-      else if (currPlayer->colorId == "blue" && digitalRead(moveBlueButton) == HIGH) {
+      else if (currPlayer->colorId == "blue" && digitalRead(moveBlueButton) == LOW) {
         currPlayer->takeTurn(roll); // start the player's turn with their roll
       }
 

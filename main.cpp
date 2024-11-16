@@ -63,26 +63,67 @@ class Piece {
     void moveOne() {
       // if statement prevents piece from moving forward if it is at its end position on the board
       if ((currPos+1) % gameBoardSize != endPos) // modulus functionality to create circularity for board
-        pixels.setPixelColor(ledMAP[currPos], pixels.Color(0, 0, 0)); // clear board
-        pixels.show(); 
+             pixels.setPixelColor(ledMAP[currPos], pixels.Color(0, 0, 0)); // clear board
+            //Serial.println(ledMAP[currPos]); 
+            pixels.show(); 
+       
 
         currPos = (currPos + 1) % gameBoardSize;
 
         if (colorId == "red") {
-          pixels.setPixelColor(ledMAP[currPos], pixels.Color(150, 0, 0)); // RED
-          pixels.show(); 
+            if(pixels.getPixelColor(ledMAP[currPos])==0){
+                pixels.setPixelColor(ledMAP[currPos], pixels.Color(150, 0, 0)); // RED
+                Serial.print("current position and led map current position: "); 
+                Serial.println(currPos); 
+                Serial.println(ledMAP[currPos]); 
+                pixels.show(); 
+            }
+            else{ 
+                Serial.println("OVERLAPPED");
+            }
+          
         }
         else if (colorId == "yellow") {
-          pixels.setPixelColor(ledMAP[currPos], pixels.Color(150, 150, 0)); // YELLOW
-          pixels.show(); 
+          if(pixels.getPixelColor(ledMAP[currPos])==0){
+                Serial.print("getcolor return : ");
+                Serial.println(pixels.getPixelColor(ledMAP[currPos])); 
+                pixels.setPixelColor(ledMAP[currPos], pixels.Color(150, 150, 0)); // YELLOW
+                Serial.print("current position and led map current position: "); 
+                Serial.println(currPos); 
+                Serial.println(ledMAP[currPos]); 
+                pixels.show(); 
+            }
+            else{ 
+                Serial.println("OVERLAPPED");
+            }
         }
         else if (colorId == "green") {
-          pixels.setPixelColor(ledMAP[currPos], pixels.Color(0, 150, 0)); // GREEN
-          pixels.show(); 
+          if(pixels.getPixelColor(ledMAP[currPos])==0){
+                Serial.print("getcolor return : ");
+                Serial.println(pixels.getPixelColor(ledMAP[currPos])); 
+                pixels.setPixelColor(ledMAP[currPos], pixels.Color(0, 150, 0)); // GREEN
+                Serial.print("current position and led map current position: "); 
+                Serial.println(currPos); 
+                Serial.println(ledMAP[currPos]); 
+                pixels.show(); 
+            }
+            else{ 
+                Serial.println("OVERLAPPED");
+            }
         }
         else if (colorId == "blue") {
-          pixels.setPixelColor(ledMAP[currPos], pixels.Color(0, 0, 150)); // BLUE
-          pixels.show();
+          if(pixels.getPixelColor(ledMAP[currPos])==0){
+                Serial.print("getcolor return : ");
+                Serial.println(pixels.getPixelColor(ledMAP[currPos])); 
+                pixels.setPixelColor(ledMAP[currPos], pixels.Color(0, 0, 150)); // BLUE
+                Serial.print("current position and led map current position: "); 
+                Serial.println(currPos); 
+                Serial.println(ledMAP[currPos]); 
+                pixels.show(); 
+            }
+            else{ 
+                Serial.println("OVERLAPPED");
+            }
         }      
       }
     
@@ -103,8 +144,36 @@ class Piece {
         if (rollNum == 6) {
           isHome = false;
           currPos = startPos; // puts piece on the board
-          moveOne();
+          
+        if (colorId == "red") {
+          pixels.setPixelColor(ledMAP[currPos], pixels.Color(150, 0, 0)); // RED
+          Serial.print("current position and led map current position: "); 
+          Serial.println(currPos); 
+          Serial.println(ledMAP[currPos]); 
+          pixels.show(); 
         }
+        else if (colorId == "yellow") {
+          pixels.setPixelColor(ledMAP[currPos], pixels.Color(150, 150, 0)); // YELLOW
+          Serial.print("current position and led map current position: "); 
+          Serial.println(currPos); 
+          Serial.println(ledMAP[currPos]); 
+          pixels.show(); 
+        }
+        else if (colorId == "green") {
+          pixels.setPixelColor(ledMAP[currPos], pixels.Color(0, 150, 0)); // GREEN
+          Serial.print("current position and led map current position: "); 
+          Serial.println(currPos); 
+          Serial.println(ledMAP[currPos]); 
+          pixels.show(); 
+        }
+        else if (colorId == "blue") {
+          pixels.setPixelColor(ledMAP[currPos], pixels.Color(0, 0, 150)); // BLUE
+          Serial.print("current position and led map current position: "); 
+          Serial.println(currPos); 
+          Serial.println(ledMAP[currPos]); 
+          pixels.show();
+        }      
+    }
       }
       // if the piece is at end, need to roll a 1 to win
       else if (currPos == endPos -1) {
@@ -116,6 +185,7 @@ class Piece {
       else {
         for (int i = 0; i < rollNum; i++) {
           moveOne();
+          delay(100); 
           moveCounter++; 
           if(rollNum-moveCounter ==1 && currPos == endPos){ 
             hasWon= true; 
@@ -227,10 +297,10 @@ void setDicePad(int roll){
 
 void setup() {
  pinMode(diceButton,INPUT);
- pinMode(moveRedButton, INPUT);
- pinMode(moveYellowButton, INPUT);
- pinMode(moveGreenButton, INPUT);
- pinMode(moveBlueButton, INPUT);
+ pinMode(moveRedButton, INPUT_PULLUP);
+ pinMode(moveYellowButton, INPUT_PULLUP);
+ pinMode(moveGreenButton, INPUT_PULLUP);
+ pinMode(moveBlueButton, INPUT_PULLUP);
  pinMode(buzzer, OUTPUT); // Set buzzer - pin 8 as an output
  pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
  homeBase(); // set home base
@@ -246,10 +316,10 @@ void setup() {
 }
 
   // create all 4 pieces and initialize corresponding board values
-  Piece* Red = new Piece("red", 1, 40);
-  Piece* Yellow = new Piece("yellow", 11, 10);
-  Piece* Green = new Piece("green", 21, 20);
-  Piece* Blue = new Piece("blue", 31, 30);
+  Piece* Red = new Piece("red", 0, 39);
+  Piece* Yellow = new Piece("yellow", 10, 9);
+  Piece* Green = new Piece("green", 20, 19);
+  Piece* Blue = new Piece("blue", 30, 29);
   Piece* Players[numPlayers] = {Red, Yellow, Green, Blue};
   int currPlayerInd = 0;
   Piece* currPlayer = Players[currPlayerInd]; // default first player is red

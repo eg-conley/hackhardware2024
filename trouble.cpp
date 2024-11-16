@@ -10,7 +10,7 @@ using namespace std;
 int rollDie() {
     srand(time(0)); // seed random number with current time
     int randomNum =  (rand() % 6) + 1; // random # 1-6
-    // in Arduino code, would change LED matrix here
+    // in Arduino code, would change LED matrix here to display the die number
 
     return randomNum;
 }
@@ -29,7 +29,10 @@ class Player {
         Player(string colorId, int startPos, int endPos) : colorId(colorId), startPos(startPos), endPos(endPos), isHome(true), hasWon(false) {}
 
         void moveOne() {
-            currPos++;
+            // move Player piece to next position, looping back to 0 when necessary
+            // if Player is at their end position, make sure they don't loop around again
+            if ((currPos + 1) % 40 != endPos)
+               currPos = (currPos + 1) % 40;
             // in Arduino code, would change LED matrix here
         }
 
@@ -42,10 +45,10 @@ class Player {
             int moveCount;
 
             // if the Player is stil at home
-            if (currPos == isHome) {
-                moveCount = rollDie();
-                // depending on die roll...
-                if (moveCount != 6) {
+            if (isHome) {
+               moveCount = rollDie();
+               // depending on die roll...
+               if (moveCount != 6) {
                     // next Player's turn
                 }
                 else {
@@ -78,8 +81,6 @@ class Player {
                         moveOne();
                         actualMoves++;
                 }
-
-                    // next Player's turn
             }  
         }
 };
@@ -98,20 +99,26 @@ void gameSetup() {
    Player* Blue = new Player("blue", 31, 30);
 
    // creates a vector of Player objects in order to track whose turn it is
-   vector <Player*> turns;
-   turns.push_back(Red);
-   turns.push_back(Yellow);
-   turns.push_back(Green);
-   turns.push_back(Blue);
+   vector<Player*> turns = {Red, Yellow, Green, Blue};
+   int currIndex = 0;
+   Player* currPlayerTurn = turns[currIndex]; // default first player is red
 
-   // determines current Player
-   Player* currPlayerTurn = turns[0]; // in Arudino, this would be decided based on who rolls the 6 first, default as red
-   while (currPlayerTurn->hasWon == false) {
-     currPlayerTurn->takeTurn();
-   }
+   // game loop until a player wins
+   while (true) {
+      currPlayerTurn->takeTurn();
+      // check win condition
+      if (currPlayerTurn->hasWon) {
+         break;
+      }
+      // move to the next Player's turn, looping back to first
+      currIndex = (currIndex + 1) % turns.size();
+      currPlayerTurn = turns[currIndex];
+    }
 
 }
 
-int main() {
+int main() { // this is the setup code in Arudino that would run once
+   gameSetup();
+
    return 0;
 }

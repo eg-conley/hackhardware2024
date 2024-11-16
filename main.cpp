@@ -93,13 +93,13 @@ class Piece {
 
 // set home base function 
 void homeBase(){ 
-    pixels.setPixelColor(0, pixels.Color(0, 150, 0)); // GREEN HOME 
+    pixels.setPixelColor(0, pixels.Color(150, 150, 0)); // GREEN HOME 
     pixels.show(); 
     pixels.setPixelColor(15, pixels.Color(150, 0, 0)); // BLUE HOME 
     pixels.show();   // Send the updatedpixel colors to the hardware.
     pixels.setPixelColor(240, pixels.Color(0, 0, 150)); // RED HOME 
     pixels.show();   // Send the updatedpixel colors to the hardware.
-    pixels.setPixelColor(255, pixels.Color(150, 150, 0)); //YELLOW  HOME 
+    pixels.setPixelColor(255, pixels.Color(0, 150, 0)); //YELLOW  HOME 
    pixels.show();   // Send the updatedpixel colors to the hardware. 
    delay(DELAYVAL); // Pause before next pass through loop
 }

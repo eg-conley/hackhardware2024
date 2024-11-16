@@ -15,7 +15,6 @@ const int moveYellowButton;
 const int moveGreenButton;
 const int moveBlueButton;
 const int diceButton = 10 ;
-int dice_button_state;
 const int buzzer = 8; //buzzer to arduino pin 8 for victory music 
 
 // initialize led matrix
@@ -83,7 +82,7 @@ class Piece {
     }
 };
 
-//set home base function 
+// set home base function 
 void homeBase(){ 
     pixels.setPixelColor(0, pixels.Color(0, 150, 0)); // GREEN HOME 
     pixels.show(); 
@@ -96,7 +95,7 @@ void homeBase(){
    delay(DELAYVAL); // Pause before next pass through loop
 }
 
-//clear pad
+// clear pad
 void pixelPadClear(){ 
   for(int i=103; i<106; i++){ 
     pixels.setPixelColor(i, pixels.Color(0,0,0)); // GREEN HOME 
@@ -112,23 +111,23 @@ void pixelPadClear(){
   }
 }
 
-//set dice pad
-void setDicePad(int randomNumber){ 
+// set dice pad
+void setDicePad(int roll){ 
   Serial.println("DICE BUTTON PRESSED"); 
       //CLEAR DICE PAD 
       pixelPadClear(); 
-      Serial.println(randomNumber); 
-      if(randomNumber == 1){ 
+      Serial.println(roll); 
+      if(roll == 1){ 
         pixels.setPixelColor(119, pixels.Color(150, 150, 150)); // GREEN HOME 
         pixels.show(); 
       }
-      else if(randomNumber == 2){ 
+      else if(roll == 2){ 
         pixels.setPixelColor(103, pixels.Color(150, 150, 150)); // GREEN HOME 
         pixels.show(); 
         pixels.setPixelColor(137, pixels.Color(150, 150, 150)); // GREEN HOME 
         pixels.show(); 
       }
-      else if(randomNumber == 3){ 
+      else if(roll == 3){ 
         pixels.setPixelColor(119, pixels.Color(150, 150, 150)); // GREEN HOME 
         pixels.show(); 
         pixels.setPixelColor(103, pixels.Color(150, 150, 150)); // GREEN HOME 
@@ -136,7 +135,7 @@ void setDicePad(int randomNumber){
         pixels.setPixelColor(137, pixels.Color(150, 150, 150)); // GREEN HOME 
         pixels.show(); 
       }
-      else if(randomNumber == 4){ 
+      else if(roll == 4){ 
         pixels.setPixelColor(103, pixels.Color(150, 150, 150)); // GREEN HOME 
         pixels.show(); 
         pixels.setPixelColor(105, pixels.Color(150, 150, 150)); // GREEN HOME 
@@ -148,7 +147,7 @@ void setDicePad(int randomNumber){
         pixels.setPixelColor(135, pixels.Color(150, 150, 150)); // GREEN HOME 
         pixels.show(); 
       }
-      else if(randomNumber == 5){ 
+      else if(roll == 5){ 
         pixels.setPixelColor(103, pixels.Color(150, 150, 150)); // GREEN HOME 
         pixels.show(); 
         pixels.setPixelColor(105, pixels.Color(150, 150, 150)); // GREEN HOME 
@@ -162,7 +161,7 @@ void setDicePad(int randomNumber){
         pixels.setPixelColor(119, pixels.Color(150, 150, 150)); // GREEN HOME 
         pixels.show(); 
       }
-      else if(randomNumber == 6){ 
+      else if(roll == 6){ 
         pixels.setPixelColor(103, pixels.Color(150, 150, 150)); // GREEN HOME 
         pixels.show(); 
         pixels.setPixelColor(105, pixels.Color(150, 150, 150)); // GREEN HOME 
@@ -206,9 +205,26 @@ void setup() {
 
 
 void loop() {
-    dice_button_state= digitalRead(diceButton); 
-    while (dice_button_state == HIGH) {
-        int randomNumber = rollDie(); 
-        setDicePad(randomNumber); 
+    while (digitalRead(diceButton) == HIGH) {
+      int roll = rollDie(); 
+      setDicePad(roll); 
+      Serial.print("Player ");
+      Serial.print(currPlayer->colorId);
+      Serial.print("rolled: ");
+      Serial.println(roll);
+
+      currPlayer->takeTurn(roll); // start the player's turn with their roll
+  
+    if (currPlayer->hasWon) {
+      Serial.print("Player ");
+      Serial.print(currPlayer->colorId);
+      Serial.println(" has won!");
+      while (true) {} // ends the game if someone wins
     }
+
+    // otherwise move to the next player
+    currPlayerInd = (currPlayerInd + 1) % numPlayers;
+    delay (500); // debouncer 
+  }
 }
+

@@ -1,163 +1,388 @@
-#include <iostream>
-#include <cstdlib> // for rand() and srand()
-#include <ctime>   // for time()
-#include <string>
-#include <vector>
+// libraries
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <Adafruit_NeoPixel.h>
+#ifdef __AVR__
+#include <avr/power.h> // Required for 16 MHz Adafruit Trinket
+#endif
 
-using namespace std;
+// initialize LCD
+LiquidCrystal_I2C lcd(0x20,16,2); // set the LCD address to 0x20 for a 16 chars and 2 line display
 
-// this function generates and returns a random integer (1-6), as well as displays it on the LED matrix
+// initialize button pins
+const int moveRedButton;
+const int moveYellowButton;
+const int moveGreenButton;
+const int moveBlueButton;
+const int diceButton = 10 ;
+int diceButtonState;
+const int buzzer = 8; //buzzer to arduino pin 8 for victory music 
+
+// initialize led matrix
+#define PIN        2 // On Trinket or Gemma, suggest changing this to 1
+#define NUMPIXELS 256// Popular NeoPixel ring size
+Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+#define DELAYVAL 500 // Time (in milliseconds) to pause between pixels
+
+// other variables
+const int numPlayers = 4;
+const int gameBoardSize = 40; // can change the how many spaces on board
+const int offBoardPos = 50; // can change depending on board size
+
+// functions and Piece class
+// this function generates a random integer between 1 and 6
 int rollDie() {
-    int randomNum = (rand() % 6) + 1; // random # 1-6
-    // in Arduino code, would change LED matrix here to display the die number
-
-    return randomNum;
+  return random(1,7);
 }
 
-// for each of the player pieces
-class Player {
-    public: 
-        string colorId;
-        int currPos;
-        int startPos;
-        int endPos;
-        bool isHome;
-        bool hasWon;
+// this class represents the Players' board piece
+class Piece {
+  public:
+    // ATTRIBUTES
+    String colorId;
+    int currPos; // this will be set to a value not on the board (ex: 50)
+    int startPos;
+    int endPos;
+    bool isHome;
+    bool hasWon;
 
-        // construtor iniitalizes Player
-        Player(string colorId, int startPos, int endPos) : colorId(colorId), currPos(50), startPos(startPos), endPos(endPos), isHome(true), hasWon(false) {}
+    // METHODS
+    // constructor
+    Piece(String color, int start, int end) : colorId(color), currPos(offBoardPos), startPos(start), endPos(end), isHome(true), hasWon(false) {}
 
-        void moveOne() {
-            // move Player piece to next position, looping back to 0 when necessary
-            // if Player is at their end position, make sure they don't loop around again
-            if ((currPos + 1) % 40 != endPos)
-               currPos = (currPos + 1) % 40;
-            // in Arduino code, would change LED matrix here
-        }
-
-        void checkOverlaps(Player* otherPlayer) {
-            if (currPos == otherPlayer->currPos) {
-               otherPlayer->isHome = true;
-               otherPlayer->currPos = 50; // reset their position to a value that is not on board
-               cout << otherPlayer->colorId << " was sent home :( " << endl;
-            }
-        }
-
-        void takeTurn() { // in Arduino code, this would be initiated by the respective player's button push
-            cout << "Player " << colorId << " turn"<< endl;
-
-            int moveCount;
-
-            // if the Player is stil at home
-            if (isHome) {
-               moveCount = rollDie();
-               cout << "Player still home, need 6 to start. Roll count: " << moveCount << endl;
-               // depending on die roll...
-               if (moveCount != 6) {
-                    // display instructions on LCD
-                }
-                else {
-                  isHome = false;
-                  currPos = startPos;
-                  moveCount = rollDie();
-                  cout << "Player rolled a 6. Roll again for spaces: " << moveCount << endl;
-                  int actualMoves = 0;
-                  while (actualMoves < moveCount) {
-                     moveOne();
-                     actualMoves++;
-                  }
-                }
-                cout << "Player is currently at position: " << currPos << endl;
-            }
-            // if the Player is at the endPos of their cycle
-            else if (currPos == endPos-1) {
-               moveCount = rollDie();
-               cout << "Player at end, need 1 to win. Roll count: " << moveCount << endl;
-               if (moveCount != 1) { // need to roll a one to win
-                  // display instructions on LCD
-               }
-               else {
-                  hasWon = true;
-               }
-               cout << "Player is currently at position: " << currPos << endl;
-            }
-            // if the Player is at startPos or on the board
-            else {
-                moveCount = rollDie();
-               cout << "Player on board. Roll count: " << moveCount << endl;
-                int actualMoves = 0;
-                while (actualMoves < moveCount) { // in Arduino, this would be reliant on if the button is pushed
-                        moveOne();
-                        actualMoves++;
-                }
-                cout << "Player is currently at position: " << currPos << endl;
-            }  
-            cout << endl;
-        }
-};
-
-// this initiates the 4 players and keeps track of Player turns
-void gameSetup() {
-   srand(time(0)); // seed random number with current time
-
-   // game board represented by array of 40 numbers (index 0-39)
-   vector<int> gameBoard[40];
-   for (int i = 0; i < 40; i++)
-      gameBoard[i].push_back(i);
-
-   // create all four players and assign corresponding board values for startPos and endPos
-   Player* Red = new Player("red", 1, 40);
-   Player* Yellow = new Player("yellow", 11, 10);
-   Player* Green = new Player("green", 21, 20);
-   Player* Blue = new Player("blue", 31, 30);
-
-   // creates a vector of Player objects in order to track whose turn it is
-   vector<Player*> turns = {Red, Yellow, Green, Blue};
-   int currIndex = 0;
-   Player* currPlayerTurn = turns[currIndex]; // default first player is red
-
-   // game loop until a player wins
-   int turnCount = 0; // Optional: safeguard
-   const int maxTurns = 10; // Prevent infinite loop for debugging
-
-   while (true) {
-      currPlayerTurn->takeTurn();
-
-      // check all other player pieces and if they are in the same spot
-      int checkIndex = (currIndex + 1) % turns.size();
-      //cout << "check Index: " << checkIndex << " current Index: " << currIndex << endl;
-      while (currIndex != checkIndex)
-      {
-         currPlayerTurn->checkOverlaps(turns[checkIndex]);
-         checkIndex = (checkIndex + 1) % turns.size(); // increment the checkIndex
-         //cout << "next index to check in while loop: " << checkIndex << endl;
-      }
-
-      // check win condition
-      if (currPlayerTurn->hasWon) {
-         break;
-      }
-      // move to the next Player's turn, looping back to first
-      currIndex = (currIndex + 1) % turns.size();
-      currPlayerTurn = turns[currIndex];
-    
-      /*if (++turnCount > maxTurns) { // Safeguard
-        cout << "Error: Infinite loop detected. Exiting game." << endl;
-        break;
-      }*/
+    // this function moves the piece forward one space on the board
+    void moveOne() {
+      // if statement prevents piece from moving forward if it is at its end position on the board
+      if ((currPos+1) % gameBoardSize != endPos) // modulus functionality to create circularity for board
+        currPos = (currPos + 1) % gameBoardSize;
     }
 
-    // game winning sequence
-      // iterate through to check who won
-      for (int i = 0; i < turns.size(); i++) {
-         if (turns[i]->hasWon == true)
-            cout << "Player " << turns[i]->colorId << " has won!" << endl;
+    // this function checks if another piece is in the same position on the board and sends that piece back to home
+    void checkOverlaps(Piece* otherPiece) {
+      if (currPos == otherPiece->currPos) {
+        otherPiece->isHome = true;
+        otherPiece->currPos = offBoardPos;
+      }
+    }
+
+    // this function starts the corresponding Player's turn
+    void takeTurn(int moveCount) {
+      // if the piece is home, need to roll a 6 to get on board
+      if (isHome) {
+        if (moveCount == 6) {
+          isHome = false;
+          currPos = startPos; // puts piece on the board
+        }
+      }
+      // if the piece is at end, need to roll a 1 to win
+      else if (currPos == endPos -1) {
+        if (moveCount == 1) {
+          hasWon = true;
+        }
+      }
+      // if piece is on board, roll
+      else {
+        for (int i = 0; i < moveCount; i++)
+          moveOne();
+      }
+    }
+};
+
+// set home base function 
+void homeBase(){ 
+    pixels.setPixelColor(0, pixels.Color(0, 150, 0)); // GREEN HOME 
+    pixels.show(); 
+    pixels.setPixelColor(15, pixels.Color(150, 0, 0)); // BLUE HOME 
+    pixels.show();   // Send the updatedpixel colors to the hardware.
+    pixels.setPixelColor(240, pixels.Color(0, 0, 150)); // RED HOME 
+    pixels.show();   // Send the updatedpixel colors to the hardware.
+    pixels.setPixelColor(255, pixels.Color(150, 150, 0)); //YELLOW  HOME 
+   pixels.show();   // Send the updatedpixel colors to the hardware. 
+   delay(DELAYVAL); // Pause before next pass through loop
+}
+
+// clear pad
+void pixelPadClear(){ 
+  for(int i=103; i<106; i++){ 
+    pixels.setPixelColor(i, pixels.Color(0,0,0)); // GREEN HOME 
+    pixels.show(); 
+  }
+  for(int i=118; i<121; i++){ 
+    pixels.setPixelColor(i, pixels.Color(0,0,0)); // GREEN HOME 
+    pixels.show(); 
+  }
+  for(int i=135; i<137; i++){ 
+    pixels.setPixelColor(i, pixels.Color(0,0,0)); // GREEN HOME 
+    pixels.show(); 
+  }
+}
+
+// set dice pad
+void setDicePad(int roll){ 
+  Serial.println("DICE BUTTON PRESSED"); 
+      //CLEAR DICE PAD 
+      pixelPadClear(); 
+      Serial.println(roll); 
+      if(roll == 1){ 
+        pixels.setPixelColor(119, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+      }
+      else if(roll == 2){ 
+        pixels.setPixelColor(103, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+        pixels.setPixelColor(137, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+      }
+      else if(roll == 3){ 
+        pixels.setPixelColor(119, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+        pixels.setPixelColor(103, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+        pixels.setPixelColor(137, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+      }
+      else if(roll == 4){ 
+        pixels.setPixelColor(103, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+        pixels.setPixelColor(105, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+        pixels.setPixelColor(137, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+        pixels.setPixelColor(103, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+        pixels.setPixelColor(135, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+      }
+      else if(roll == 5){ 
+        pixels.setPixelColor(103, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+        pixels.setPixelColor(105, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+        pixels.setPixelColor(137, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+        pixels.setPixelColor(103, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+        pixels.setPixelColor(135, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+        pixels.setPixelColor(119, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+      }
+      else if(roll == 6){ 
+        pixels.setPixelColor(103, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+        pixels.setPixelColor(105, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+        pixels.setPixelColor(137, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+        pixels.setPixelColor(135, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+        pixels.setPixelColor(118, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+        pixels.setPixelColor(120, pixels.Color(150, 150, 150)); // GREEN HOME 
+        pixels.show(); 
+        
+      }
+      delay(1000); 
+      diceButtonState = 0; 
+    }
+
+void setup() {
+ pinMode(diceButton,INPUT);
+ pinMode(buzzer, OUTPUT); // Set buzzer - pin 8 as an output
+ pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
+ homeBase(); // set home base
+
+  Serial.begin(9600);
+  
+  // initialize random number generator
+  randomSeed(analogRead(0));
+
+  // create board with indices
+  int gameBoard[gameBoardSize];
+  for (int i = 0; i < gameBoardSize; i++)
+    gameBoard[i] = i;
+}
+
+  // create all 4 pieces and initialize corresponding board values
+  Piece* Red = new Piece("red", 1, 40);
+  Piece* Yellow = new Piece("yellow", 11, 10);
+  Piece* Green = new Piece("green", 21, 20);
+  Piece* Blue = new Piece("blue", 31, 30);
+  Piece* Players[numPlayers] = {Red, Yellow, Green, Blue};
+  int currPlayerInd = 0; // default starting player is Red
+  Piece* currPlayer = Players[currPlayerInd]; // default first player is red
+  
+
+  void loop() {
+    diceButtonState = digitalRead(diceButton);
+    while (diceButtonState == HIGH) {
+      int roll = rollDie(); 
+      setDicePad(roll); 
+      
+      Serial.print("Player ");
+      Serial.print(currPlayer->colorId);
+      Serial.print("rolled: ");
+      Serial.println(roll);
+
+      currPlayer->takeTurn(roll); // start the player's turn with their roll
+  
+      if (currPlayer->hasWon) {
+        Serial.print("Player ");
+        Serial.print(currPlayer->colorId);
+        Serial.println(" has won!");
+        while (true) {} // ends the game if someone wins
       }
 
+      // otherwise move to the next player
+      currPlayerInd = (currPlayerInd + 1) % numPlayers;
+      delay (500); // debouncer 
+  }
+
 }
 
-int main() { // this is the setup code in Arudino that would run once
-   gameSetup();
 
-   return 0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*// libraries
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+// initialize LCD
+LiquidCrystal_I2C lcd(0x20,16,2); // set the LCD address to 0x20 for a 16 chars and 2 line display
+
+// button pins
+const int moveRedButton;
+const int moveYellowButton;
+const int moveGreenButton;
+const int moveBlueButton;
+const int rollButton;
+
+// LED matrix pins
+
+// other variables
+const int numPlayers = 4;
+const int gameBoardSize = 40; // can change the how many spaces on board
+const int offBoardPos = 50; // can change depending on board size
+Piece* Players[numPlayers];
+int currPlayerIndex = 0; // default starting player is Red
+
+// functions and Piece class
+// this function generates a random integer between 1 and 6
+int rollDie() {
+  return random(1,7);
 }
+
+// this class represents the Players' board piece
+class Piece {
+  public:
+    // ATTRIBUTES
+    String colorId;
+    int currPos; // this will be set to a value not on the board (ex: 50)
+    int startPos;
+    int endPos;
+    bool isHome;
+    bool hasWon;
+
+    // METHODS
+    // constructor
+    Piece(String color, int start, int end) : colorId(color), currPos(offBoardPos), startPos(start), endPos(end), isHome(true), hasWon(false) {}
+
+    // this function moves the piece forward one space on the board
+    void moveOne() {
+      // if statement prevents piece from moving forward if it is at its end position on the board
+      if ((currPos+1) % gameBoardSize != endPos) // modulus functionality to create circularity for board
+        currPos = (currPos + 1) % gameBoardSize;
+    }
+
+    // this function checks if another piece is in the same position on the board and sends that piece back to home
+    void checkOverlaps(Piece* otherPiece) {
+      if (currPos == otherPiece->currPos) {
+        otherPiece->isHome = true;
+        otherPiece->currPos = offBoardPos;
+      }
+    }
+
+    // this function starts the corresponding Player's turn
+    void takeTurn(int moveCount) {
+      // if the piece is home, need to roll a 6 to get on board
+      if (isHome) {
+        if (moveCount == 6) {
+          isHome = false;
+          currPos = startPos; // puts piece on the board
+        }
+      }
+      // if the piece is at end, need to roll a 1 to win
+      else if (currPos == endPos -1) {
+        if (moveCount == 1) {
+          hasWon = true;
+        }
+      }
+      // if piece is on board, roll
+      else {
+        for (int i = 0; i < moveCount; i++)
+          moveOne();
+      }
+    }
+};
+
+// setup code runs once
+void setup() {
+  Serial.begin(9600);
+  
+  // initialize random number generator
+  randomSeed(analogRead(0));
+
+  // create board with indices
+  int gameBoard[gameBoardSize];
+  for (int i = 0; i < gameBoardSize; i++)
+    gameBoard[i] = i;
+
+  // create all 4 pieces and initialize corresponding board values
+  Players[0] = new Piece("red", 1, 40);
+  Players[1] = new Piece("yellow", 11, 10);
+  Players[2] = new Piece("green", 21, 20);
+  Players[3] = new Piece("blue", 31, 30);
+}
+
+
+void loop() {
+  Piece* currPlayer = Players[currPlayerInd];
+
+  // wait for player to press roll button to roll the die
+  if (digitalRead(rollButton == HIGH)) {
+    int roll = rollDie();
+    Serial.print("Player ");
+    Serial.print(currPlayer->colorId);
+    Serial.print("rolled: ");
+    Serial.println(roll);
+
+    currPlayer->takeTurn(roll); // start the player's turn with their roll
+  
+    if (currPlayer->hasWon) {
+      Serial.print("Player ");
+      Serial.print(currPlayer->colorId);
+      Serial.println(" has won!");
+      while (true) {} // ends the game if someone wins
+    }
+
+    // otherwise move to the next player
+    currPlayerInd = (currPlayerInd + 1) % numPlayers;
+    delay (500); // debouncer 
+  }
+
+}*/
+
+
+
+

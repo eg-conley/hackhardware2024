@@ -23,6 +23,13 @@ const int buzzer = 8; //buzzer to arduino pin 8 for victory music
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 #define DELAYVAL 500 // Time (in milliseconds) to pause between pixels
 
+// other variables
+const int numPlayers = 4;
+const int gameBoardSize = 40; // can change the how many spaces on board
+const int offBoardPos = 50; // can change depending on board size
+Piece* Players[numPlayers];
+int currPlayerIndex = 0; // default starting player is Red
+
 // functions and Piece class
 // this function generates a random integer between 1 and 6
 int rollDie() {
@@ -208,7 +215,7 @@ void loop() {
     while (digitalRead(diceButton) == HIGH) {
       int roll = rollDie(); 
       setDicePad(roll); 
-      
+
       Serial.print("Player ");
       Serial.print(currPlayer->colorId);
       Serial.print("rolled: ");

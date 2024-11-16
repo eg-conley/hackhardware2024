@@ -83,19 +83,10 @@ class Piece {
       }
       // if piece is on board, roll
       else {
-            currPlayer->moveOne(); // Move the current player's piece one step forward
-            Serial.print("Player ");
-            Serial.print(currPlayer->colorId);
-            Serial.print(" moved to position: ");
-            Serial.println(currPlayer->currPos);
-
-            delay(300); // Debounce delay
-    }
-
-
-
-        for (int i = 0; i < moveCount; i++)
+        for (int i = 0; i < moveCount; i++) {
           moveOne();
+          // update LED with color
+        }
       }
     }
 

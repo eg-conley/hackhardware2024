@@ -28,6 +28,7 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 const int numPlayers = 4;
 const int gameBoardSize = 40; // can change the how many spaces on board
 const int offBoardPos = 50; // can change depending on board size
+int gameBoard[gameBoardSize];
 
 // functions and Piece class
 // this function generates a random integer between 1 and 6
@@ -201,7 +202,6 @@ void setup() {
   randomSeed(analogRead(0));
 
   // create board with indices
-  int gameBoard[gameBoardSize];
   for (int i = 0; i < gameBoardSize; i++)
     gameBoard[i] = i;
 }
@@ -228,6 +228,8 @@ void setup() {
 
       currPlayer->takeTurn(roll); // start the player's turn with their roll
 
+
+      
       // check all other player pieces and if they are in the same spot
       int checkIndex = (currPlayerInd + 1) % numPlayers;
       //cout << "check Index: " << checkIndex << " current Index: " << currIndex << endl;

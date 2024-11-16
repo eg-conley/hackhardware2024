@@ -27,7 +27,11 @@ const int buzzer = 8; //buzzer to arduino pin 8 for victory music
 #define NUMPIXELS 256// Popular NeoPixel ring size
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 #define DELAYVAL 500 // Time (in milliseconds) to pause between pixels
-
+int ledMAP[40] = {44, 43, 42, 41, 40, 39, 38, 37, 38, 35,
+                  61, 66, 93, 98, 125, 130, 157, 162, 189, 194,
+                  220, 219, 218, 217, 216, 215, 214, 213, 212, 211,
+                  205, 178, 173, 146, 141, 114, 109, 82, 77, 50 };
+                  
 // other variables
 const int numPlayers = 4;
 const int gameBoardSize = 40; // can change the how many spaces on board
@@ -59,10 +63,27 @@ class Piece {
     void moveOne() {
       // if statement prevents piece from moving forward if it is at its end position on the board
       if ((currPos+1) % gameBoardSize != endPos) // modulus functionality to create circularity for board
+        pixels.setPixelColor(ledMAP[currPos], pixels.Color(0, 0, 0)); // clear board
+        pixels.show(); 
+
         currPos = (currPos + 1) % gameBoardSize;
 
-        // update the board with the correct color
-        
+        if (colorId == "red") {
+          pixels.setPixelColor(ledMAP[currPos], pixels.Color(150, 0, 0)); // RED
+          pixels.show(); 
+        }
+        else if (colorId == "yellow") {
+          pixels.setPixelColor(ledMAP[currPos], pixels.Color(150, 150, 0)); // YELLOW
+          pixels.show(); 
+        }
+        else if (colorId == "green") {
+          pixels.setPixelColor(ledMAP[currPos], pixels.Color(0, 150, 0)); // GREEN
+          pixels.show(); 
+        }
+        else if (colorId == "blue") {
+          pixels.setPixelColor(ledMAP[currPos], pixels.Color(0, 0, 150)); // BLUE
+          pixels.show();
+        }      
       }
     
     // this function checks if another piece is in the same position on the board and sends that piece back to home
@@ -103,13 +124,13 @@ class Piece {
 
 // set home base function 
 void homeBase(){ 
-    pixels.setPixelColor(0, pixels.Color(150, 150, 0)); // GREEN HOME 
+    pixels.setPixelColor(0, pixels.Color(150, 150, 0)); // YELLOw HOME 
     pixels.show(); 
-    pixels.setPixelColor(15, pixels.Color(150, 0, 0)); // BLUE HOME 
+    pixels.setPixelColor(15, pixels.Color(150, 0, 0)); // RED HOME 
     pixels.show();   // Send the updatedpixel colors to the hardware.
-    pixels.setPixelColor(240, pixels.Color(0, 0, 150)); // RED HOME 
+    pixels.setPixelColor(240, pixels.Color(0, 0, 150)); // BLUE HOME 
     pixels.show();   // Send the updatedpixel colors to the hardware.
-    pixels.setPixelColor(255, pixels.Color(0, 150, 0)); //YELLOW  HOME 
+    pixels.setPixelColor(255, pixels.Color(0, 150, 0)); // GREEN  HOME 
    pixels.show();   // Send the updatedpixel colors to the hardware. 
    delay(DELAYVAL); // Pause before next pass through loop
 }

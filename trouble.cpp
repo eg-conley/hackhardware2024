@@ -116,21 +116,14 @@ void gameSetup() {
    int currIndex = 0;
    Player* currPlayerTurn = turns[currIndex]; // default first player is red
 
-   // game loop until a player wins
-   int turnCount = 0; // Optional: safeguard
-   const int maxTurns = 10; // Prevent infinite loop for debugging
-
    while (true) {
       currPlayerTurn->takeTurn();
 
       // check all other player pieces and if they are in the same spot
       int checkIndex = (currIndex + 1) % turns.size();
-      //cout << "check Index: " << checkIndex << " current Index: " << currIndex << endl;
-      while (currIndex != checkIndex)
-      {
+      while (currIndex != checkIndex) {
          currPlayerTurn->checkOverlaps(turns[checkIndex]);
          checkIndex = (checkIndex + 1) % turns.size(); // increment the checkIndex
-         //cout << "next index to check in while loop: " << checkIndex << endl;
       }
 
       // check win condition
@@ -140,16 +133,15 @@ void gameSetup() {
       // move to the next Player's turn, looping back to first
       currIndex = (currIndex + 1) % turns.size();
       currPlayerTurn = turns[currIndex];
-      
+
     }
 
-    // game winning sequence
-      // iterate through to check who won
+   // game winning sequence
+   // iterate through to check who won
       for (int i = 0; i < turns.size(); i++) {
          if (turns[i]->hasWon == true)
             cout << "Player " << turns[i]->colorId << " has won!" << endl;
       }
-
 }
 
 int main() { // this is the setup code in Arudino that would run once

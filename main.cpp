@@ -1,6 +1,6 @@
 // libraries
-#include <Wire.h>
-#include <LiquidCrystal_I2C.h>
+/* #include <Wire.h>
+#include <LiquidCrystal_I2C.h> */
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
 #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
@@ -20,7 +20,7 @@ const int buzzer = 8; //buzzer to arduino pin 8 for victory music
 // initialize led matrix
 #define PIN        2 // On Trinket or Gemma, suggest changing this to 1
 #define NUMPIXELS 256// Popular NeoPixel ring size
-Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+//Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 #define DELAYVAL 500 // Time (in milliseconds) to pause between pixels
 
 // other variables

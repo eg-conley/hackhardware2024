@@ -83,13 +83,23 @@ class Piece {
       }
       // if piece is on board, roll
       else {
+            currPlayer->moveOne(); // Move the current player's piece one step forward
+            Serial.print("Player ");
+            Serial.print(currPlayer->colorId);
+            Serial.print(" moved to position: ");
+            Serial.println(currPlayer->currPos);
+
+            delay(300); // Debounce delay
+    }
+
+
+
         for (int i = 0; i < moveCount; i++)
           moveOne();
       }
-
-
-      
     }
+
+
 };
 
 // set home base function 
@@ -228,8 +238,6 @@ void setup() {
 
       currPlayer->takeTurn(roll); // start the player's turn with their roll
 
-
-      
       // check all other player pieces and if they are in the same spot
       int checkIndex = (currPlayerInd + 1) % numPlayers;
       //cout << "check Index: " << checkIndex << " current Index: " << currIndex << endl;
@@ -250,17 +258,7 @@ void setup() {
       // otherwise move to the next player
       currPlayerInd = (currPlayerInd + 1) % numPlayers;
       currPlayer = Players[currPlayerInd];
-      delay (500); // debouncer 
-    }
-
-    // game winning sequence
-      // iterate through to check who won
-      for (int i = 0; i < numPlayers; i++) {
-         if (Players[i]->hasWon == true) {
-          Serial.print("Player ");
-          Serial.print(Players[i]->colorId);
-          Serial.println(" has won!");
-         }
+      delay (500); // debouncer
       }
   }
 

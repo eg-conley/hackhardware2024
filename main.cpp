@@ -60,20 +60,24 @@ class Piece {
       // if statement prevents piece from moving forward if it is at its end position on the board
       if ((currPos+1) % gameBoardSize != endPos) // modulus functionality to create circularity for board
         currPos = (currPos + 1) % gameBoardSize;
-        switch (color) {
+
+        // update the board with the correct color
+        switch (colorId) {
           case "red":
             break;
 
-          case
+          case "yellow"
+            break;
+          
+          case "green"
+            break;
 
+          case "blue"
 
-
-
+            break;
         }
-
-        // add LED matrix color updates here
     }
-
+  
     // this function checks if another piece is in the same position on the board and sends that piece back to home
     void checkOverlaps(Piece* otherPiece) {
       if (currPos == otherPiece->currPos) {

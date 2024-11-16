@@ -38,7 +38,7 @@ class Player {
         void checkOverlaps(Player* otherPlayer) {
             if (currPos == otherPlayer->currPos) {
                otherPlayer->isHome = true;
-               otherPlayer->currPos = 50; // reset their position 
+               otherPlayer->currPos = 50; // reset their position to a value that is not on board
                cout << otherPlayer->colorId << " was sent home :( " << endl;
             }
         }

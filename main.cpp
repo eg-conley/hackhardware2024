@@ -208,6 +208,7 @@ void loop() {
     while (digitalRead(diceButton) == HIGH) {
       int roll = rollDie(); 
       setDicePad(roll); 
+      
       Serial.print("Player ");
       Serial.print(currPlayer->colorId);
       Serial.print("rolled: ");

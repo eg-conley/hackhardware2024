@@ -21,7 +21,7 @@ const int buzzer = 8; //buzzer to arduino pin 8 for victory music
 // initialize led matrix
 #define PIN        2 // On Trinket or Gemma, suggest changing this to 1
 #define NUMPIXELS 256// Popular NeoPixel ring size
-//Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 #define DELAYVAL 500 // Time (in milliseconds) to pause between pixels
 
 // other variables
@@ -111,7 +111,7 @@ void pixelPadClear(){
     pixels.setPixelColor(i, pixels.Color(0,0,0)); // GREEN HOME 
     pixels.show(); 
   }
-  for(int i=135; i<137; i++){ 
+  for(int i=135; i<138; i++){ 
     pixels.setPixelColor(i, pixels.Color(0,0,0)); // GREEN HOME 
     pixels.show(); 
   }

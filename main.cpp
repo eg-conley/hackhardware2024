@@ -11,9 +11,13 @@
 
 // initialize button pins
 const int moveRedButton = 4;
+int moveRedButtonState;
 const int moveYellowButton = 5;
+int moveYellowButtonState;
 const int moveGreenButton = 6;
+int moveGreenButtonState;
 const int moveBlueButton = 7;
+int moveBlueButtonState;
 const int diceButton = 10 ;
 int diceButtonState;
 const int buzzer = 8; //buzzer to arduino pin 8 for victory music 
@@ -56,6 +60,7 @@ class Piece {
       // if statement prevents piece from moving forward if it is at its end position on the board
       if ((currPos+1) % gameBoardSize != endPos) // modulus functionality to create circularity for board
         currPos = (currPos + 1) % gameBoardSize;
+        // add LED matrix color updates here
     }
 
     // this function checks if another piece is in the same position on the board and sends that piece back to home
@@ -63,6 +68,7 @@ class Piece {
       if (currPos == otherPiece->currPos) {
         otherPiece->isHome = true;
         otherPiece->currPos = offBoardPos;
+        // add LED matrix color updaes here also
       }
     }
 
@@ -83,6 +89,7 @@ class Piece {
       }
       // if piece is on board, roll
       else {
+        
         for (int i = 0; i < moveCount; i++) {
           moveOne();
           // update LED with color
@@ -193,6 +200,10 @@ void setDicePad(int roll){
 
 void setup() {
  pinMode(diceButton,INPUT);
+ pinMode(moveRedButton, INPUT);
+ pinMode(moveYellowButton, INPUT);
+ pinMode(moveGreenButton, INPUT);
+ pinMode(moveBlueButton, INPUT);
  pinMode(buzzer, OUTPUT); // Set buzzer - pin 8 as an output
  pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
  homeBase(); // set home base
@@ -213,7 +224,7 @@ void setup() {
   Piece* Green = new Piece("green", 21, 20);
   Piece* Blue = new Piece("blue", 31, 30);
   Piece* Players[numPlayers] = {Red, Yellow, Green, Blue};
-  int currPlayerInd = 0; // default starting player is Red
+  int currPlayerInd = 0;
   Piece* currPlayer = Players[currPlayerInd]; // default first player is red
 
   void loop() {
@@ -221,7 +232,6 @@ void setup() {
     while (diceButtonState == HIGH) {
       int roll = rollDie(); 
       setDicePad(roll); 
-      
       Serial.print("Player ");
       Serial.print(currPlayer->colorId);
       Serial.print("rolled: ");
@@ -231,12 +241,10 @@ void setup() {
 
       // check all other player pieces and if they are in the same spot
       int checkIndex = (currPlayerInd + 1) % numPlayers;
-      //cout << "check Index: " << checkIndex << " current Index: " << currIndex << endl;
       while (currPlayerInd != checkIndex)
       {
          currPlayer->checkOverlaps(Players[checkIndex]);
          checkIndex = (checkIndex + 1) % numPlayers; // increment the checkIndex
-         //cout << "next index to check in while loop: " << checkIndex << endl;
       }
 
       if (currPlayer->hasWon) {

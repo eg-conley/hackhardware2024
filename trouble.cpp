@@ -16,8 +16,7 @@ int rollDie() {
 }
 
 // Player class to initiate the 4 players by colorId
-class Player
-{
+class Player {
     public: 
         string colorId;
         int currPos;
@@ -106,10 +105,11 @@ void gameSetup() {
    turns.push_back(Blue);
 
    // determines current Player
-   Player* currPlayerTurn = turns[0]; // in Arudino, this would be decided based on who rolls the 6 first
+   Player* currPlayerTurn = turns[0]; // in Arudino, this would be decided based on who rolls the 6 first, default as red
    while (currPlayerTurn->hasWon == false) {
-     currPlayerTurn.takeTurn()
+     currPlayerTurn->takeTurn();
    }
+
 }
 
 int main() {

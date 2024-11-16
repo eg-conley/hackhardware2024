@@ -62,22 +62,9 @@ class Piece {
         currPos = (currPos + 1) % gameBoardSize;
 
         // update the board with the correct color
-        switch (colorId) {
-          case "red":
-            break;
-
-          case "yellow"
-            break;
-          
-          case "green"
-            break;
-
-          case "blue"
-
-            break;
-        }
-    }
-  
+        
+      }
+    
     // this function checks if another piece is in the same position on the board and sends that piece back to home
     void checkOverlaps(Piece* otherPiece) {
       if (currPos == otherPiece->currPos) {

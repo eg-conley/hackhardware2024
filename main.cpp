@@ -443,21 +443,21 @@ void setup() {
   lcd.setCursor(0,0);
   lcd.print("if someone lands");
   lcd.setCursor(0,1);
-  lcd.println("on you, you are   ");
+  lcd.println("on you, you are  ");
   delay(4000);
 
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("sent home. you   ");
+  lcd.print("sent home. if ");
   lcd.setCursor(0,1);
-  lcd.print("need an exact    ");
+  lcd.print("you over-roll, ");
   delay(4000);
 
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("roll to win.   ");
+  lcd.print("go to end and");
   lcd.setCursor(0,1);
-  lcd.print("good luck!       ");
+  lcd.print("need a 1 to win.");
   delay(4000);
 
   lcd.clear();

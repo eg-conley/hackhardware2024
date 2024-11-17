@@ -20,6 +20,8 @@ const int moveBlueButton = 7;
 int moveBlueButtonState;
 const int diceButton = 10 ;
 int diceButtonState;
+const int resetButton = 9;
+int resetButtonState;
 int speakerPin = 8;
 //const int buzzer = 8; //buzzer to arduino pin 8 for victory music 
 
@@ -77,7 +79,6 @@ int rollDie() {
  *
  * http://www.arduino.cc/en/Tutorial/Melody
  */
-  
 
 int length = 10; // the number of notes
 char notes[] = "fefeca a#a "; // a space represents a rest
@@ -105,6 +106,76 @@ void playNote(char note, int duration) {
   }
 }
 
+void playSong() {
+  // "we are the champions" taken from https://codebender.cc/sketch:79392#We%20are%20the%20champions.ino
+        for (int i = 0; i < length; i++) {
+          if (notes[i] == ' ') {
+            delay(beats[i] * tempo); // rest
+          } 
+          else {
+            playNote(notes[i], beats[i] * tempo);
+          } 
+          // pause between notes
+          delay(tempo / 2); 
+        }
+}
+
+void winColor(String color) {
+  if (color == "red")
+        {
+          pixels.setPixelColor(103, pixels.Color(150, 0, 0)); 
+          pixels.setPixelColor(104, pixels.Color(150, 0, 0));
+          pixels.setPixelColor(105, pixels.Color(150, 0, 0)); 
+          pixels.setPixelColor(135, pixels.Color(150, 0, 0)); 
+          pixels.setPixelColor(136, pixels.Color(150, 0, 0));
+          pixels.setPixelColor(137, pixels.Color(150, 0, 0)); 
+          pixels.setPixelColor(118, pixels.Color(150, 0, 0));
+          pixels.setPixelColor(119, pixels.Color(150, 0, 0));
+          pixels.setPixelColor(120, pixels.Color(150, 0, 0)); 
+          pixels.show();
+        }
+        if (color == "yellow")
+        {
+          pixels.setPixelColor(103, pixels.Color(150, 150, 0)); 
+          pixels.setPixelColor(104, pixels.Color(150, 150, 0));
+          pixels.setPixelColor(105, pixels.Color(150, 150, 0)); 
+          pixels.setPixelColor(135, pixels.Color(150, 150, 0)); 
+          pixels.setPixelColor(136, pixels.Color(150, 150, 0));
+          pixels.setPixelColor(137, pixels.Color(150, 150, 0)); 
+          pixels.setPixelColor(118, pixels.Color(150, 150, 0));
+          pixels.setPixelColor(119, pixels.Color(150, 150, 0));
+          pixels.setPixelColor(120, pixels.Color(150, 150, 0)); 
+          pixels.show();
+        }
+        if (color == "green")
+        {
+          pixels.setPixelColor(103, pixels.Color(0, 150, 0)); 
+          pixels.setPixelColor(104, pixels.Color(0, 150, 0));
+          pixels.setPixelColor(105, pixels.Color(0, 150, 0)); 
+          pixels.setPixelColor(135, pixels.Color(0, 150, 0)); 
+          pixels.setPixelColor(136, pixels.Color(0, 150, 0));
+          pixels.setPixelColor(137, pixels.Color(0, 150, 0)); 
+          pixels.setPixelColor(118, pixels.Color(0, 150, 0));
+          pixels.setPixelColor(119, pixels.Color(0, 150, 0));
+          pixels.setPixelColor(120, pixels.Color(0, 150, 0)); 
+          pixels.show();
+        }
+        if (color == "blue")
+        {
+          pixels.setPixelColor(103, pixels.Color(0, 0, 150)); 
+          pixels.setPixelColor(104, pixels.Color(0, 0, 150));
+          pixels.setPixelColor(105, pixels.Color(0, 0, 150)); 
+          pixels.setPixelColor(135, pixels.Color(0, 0, 150)); 
+          pixels.setPixelColor(136, pixels.Color(0, 0, 150));
+          pixels.setPixelColor(137, pixels.Color(0, 0, 150)); 
+          pixels.setPixelColor(118, pixels.Color(0, 0, 150));
+          pixels.setPixelColor(119, pixels.Color(0, 0, 150));
+          pixels.setPixelColor(120, pixels.Color(0, 0, 150)); 
+          pixels.show();
+        }
+}
+
+
 // this class represents the Players' board piece
 class Piece {
   public:
@@ -122,14 +193,9 @@ class Piece {
 
     // this function moves the piece forward one space on the board
     void moveOne() {
-        if ((currPos) % gameBoardSize != endPos)
-          currPos = (currPos + 1) % gameBoardSize;
-      /*// if statement prevents piece from moving forward if it is at its end position on the board
-      if ((currPos+1) % gameBoardSize != endPos ) // modulus functionality to create circularity for board
+      //if statement prevents piece from moving forward if it is at its end position on the board
+      if ((currPos) % gameBoardSize != endPos)
         currPos = (currPos + 1) % gameBoardSize;
-
-        if ((currPos+1) % gameBoardSize == endPos)
-        currPos = endPos;*/
     }
     
     // this function checks if another piece is in the same position on the board and sends that piece back to home
@@ -235,15 +301,8 @@ class Piece {
             Serial.println(currPos); 
             Serial.println(ledMAP[currPos]); 
             pixels.show();
-          } 
-
-          
+          }   
       }     
-        
-          //moveCounter++; 
-          //if(rollNum-moveCounter ==1 && currPos == endPos){ 
-          //  hasWon= true; 
-         //}
     }
 
 
@@ -353,6 +412,7 @@ void setup() {
  pinMode(moveYellowButton, INPUT_PULLUP);
  pinMode(moveGreenButton, INPUT_PULLUP);
  pinMode(moveBlueButton, INPUT_PULLUP);
+ pinMode(resetButton, INPUT_PULLUP);
  pinMode(speakerPin, OUTPUT);
  //pinMode(buzzer, OUTPUT); // Set buzzer - pin 8 as an output
  pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
@@ -363,52 +423,43 @@ void setup() {
   lcd.clear(); // clear what was last on it
   lcd.backlight();
   lcd.print("welcome to chase!");
-  delay(1500);
-  lcd.clear(); 
-  /*String instruction1 = "press the corner buttons to roll";
-  // scroll the message across the screen
-  for (int position = 0; position < instruction1.length(); position++) {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    // Print a substring of the message starting at 'position'
-    lcd.print(String(instruction1).substring(position));
-    delay(300); // Delay for scrolling effect
-  }
-  lcd.clear();
-  delay(300);
-  String instruction2 = "roll a 6 to get on the board";
-  // scroll the message across the screen
-  for (int position = 0; position < instruction2.length(); position++) {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    // Print a substring of the message starting at 'position'
-    lcd.print(String(instruction2).substring(position));
-    delay(300); // Delay for scrolling effect
-  }
-  lcd.clear();
-  delay(600);
-  String instruction3 = "if someone lands on you ";
-  // scroll the message across the screen
-  for (int position = 0; position < instruction3.length(); position++) {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    // Print a substring of the message starting at 'position'
-    lcd.print(String(instruction3).substring(position));
-    delay(300); // Delay for scrolling effect
-  }
-  lcd.clear();
-  delay(300);
-  String instruction4 = "you get sent home ";
-  // scroll the message across the screen
-  for (int position = 0; position < instruction4.length(); position++) {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    // Print a substring of the message starting at 'position'
-    lcd.print(String(instruction4).substring(position));
-    delay(300); // Delay for scrolling effect
-  }*/
+  delay(3000);
 
-  delay(1500);
+  lcd.clear(); 
+  lcd.setCursor(0,0);
+  lcd.print("press the corner");
+  lcd.setCursor(0,1);
+  lcd.println("buttons to roll.");
+  delay(4000);
+
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("roll a 6 to get");
+  lcd.setCursor(0,1);
+  lcd.println("on the board.   ");
+  delay(4000);
+
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("if someone lands");
+  lcd.setCursor(0,1);
+  lcd.println("on you, you are   ");
+  delay(4000);
+
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("sent home. you   ");
+  lcd.setCursor(0,1);
+  lcd.print("need an exact    ");
+  delay(4000);
+
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("roll to win.   ");
+  lcd.setCursor(0,1);
+  lcd.print("good luck!       ");
+  delay(4000);
+
   lcd.clear();
   lcd.setCursor(4,0);
   lcd.print("red turn");
@@ -421,17 +472,6 @@ void setup() {
   // create board with indices
   for (int i = 0; i < gameBoardSize; i++)
     gameBoard[i] = i;
-
-   /* const char message[] = "Hello, world! Scrolling Text! ";
-    int messageLength = sizeof(message) - 1;
-    // Scroll the message across the screen
-    for (int position = 0; position < messageLength; position++) {
-      lcd.clear();
-      // Print a substring of the message starting at 'position'
-      lcd.print(String(message).substring(position));
-      delay(300); // Delay for scrolling effect
-    
-  }*/
 }
 
   // create all 4 pieces and initialize corresponding board values
@@ -446,8 +486,6 @@ void setup() {
   void loop() {
     diceButtonState = digitalRead(diceButton);
     while (diceButtonState == HIGH) {
-      Red->hasWon = true;
-      lcd.clear();
       int roll = rollDie(); 
       setDicePad(roll); 
 
@@ -456,7 +494,7 @@ void setup() {
       Serial.print(" rolled: ");
       Serial.println(roll);
 
-      // wait for correct player to their move press button
+      // wait for correct player to make their move press button
       if (currPlayer->colorId == "red" && digitalRead(moveRedButton) == LOW) {
         currPlayer->takeTurn(roll); // start the player's turn with their roll
       }
@@ -481,84 +519,49 @@ void setup() {
       // check if current player has won
       if (currPlayer->hasWon) {
         lcd.clear();
+        lcd.setCursor(3,0);
         lcd.print(currPlayer->colorId);
         lcd.print(" won!");
-        Serial.print("Player ");
-        Serial.print(currPlayer->colorId);
-        Serial.println(" has won!");
-        if (currPlayer->colorId == "red")
-        {
-          pixels.setPixelColor(103, pixels.Color(150, 0, 0)); 
-          pixels.setPixelColor(104, pixels.Color(150, 0, 0));
-          pixels.setPixelColor(105, pixels.Color(150, 0, 0)); 
-          pixels.setPixelColor(135, pixels.Color(150, 0, 0)); 
-          pixels.setPixelColor(136, pixels.Color(150, 0, 0));
-          pixels.setPixelColor(137, pixels.Color(150, 0, 0)); 
-          pixels.setPixelColor(118, pixels.Color(150, 0, 0));
-          pixels.setPixelColor(119, pixels.Color(150, 0, 0));
-          pixels.setPixelColor(120, pixels.Color(150, 0, 0)); 
-          pixels.show();
-        }
-        if (currPlayer->colorId == "yellow")
-        {
-          pixels.setPixelColor(103, pixels.Color(150, 150, 0)); 
-          pixels.setPixelColor(104, pixels.Color(150, 150, 0));
-          pixels.setPixelColor(105, pixels.Color(150, 150, 0)); 
-          pixels.setPixelColor(135, pixels.Color(150, 150, 0)); 
-          pixels.setPixelColor(136, pixels.Color(150, 150, 0));
-          pixels.setPixelColor(137, pixels.Color(150, 150, 0)); 
-          pixels.setPixelColor(118, pixels.Color(150, 150, 0));
-          pixels.setPixelColor(119, pixels.Color(150, 150, 0));
-          pixels.setPixelColor(120, pixels.Color(150, 150, 0)); 
-          pixels.show();
-        }
-        if (currPlayer->colorId == "green")
-        {
-          pixels.setPixelColor(103, pixels.Color(0, 150, 0)); 
-          pixels.setPixelColor(104, pixels.Color(0, 150, 0));
-          pixels.setPixelColor(105, pixels.Color(0, 150, 0)); 
-          pixels.setPixelColor(135, pixels.Color(0, 150, 0)); 
-          pixels.setPixelColor(136, pixels.Color(0, 150, 0));
-          pixels.setPixelColor(137, pixels.Color(0, 150, 0)); 
-          pixels.setPixelColor(118, pixels.Color(0, 150, 0));
-          pixels.setPixelColor(119, pixels.Color(0, 150, 0));
-          pixels.setPixelColor(120, pixels.Color(0, 150, 0)); 
-          pixels.show();
-        }
-        if (currPlayer->colorId == "blue")
-        {
-          pixels.setPixelColor(103, pixels.Color(0, 0, 150)); 
-          pixels.setPixelColor(104, pixels.Color(0, 0, 150));
-          pixels.setPixelColor(105, pixels.Color(0, 0, 150)); 
-          pixels.setPixelColor(135, pixels.Color(0, 0, 150)); 
-          pixels.setPixelColor(136, pixels.Color(0, 0, 150));
-          pixels.setPixelColor(137, pixels.Color(0, 0, 150)); 
-          pixels.setPixelColor(118, pixels.Color(0, 0, 150));
-          pixels.setPixelColor(119, pixels.Color(0, 0, 150));
-          pixels.setPixelColor(120, pixels.Color(0, 0, 150)); 
-          pixels.show();
-        }
-
-        // "we are the champions" taken from https://codebender.cc/sketch:79392#We%20are%20the%20champions.ino
-        for (int i = 0; i < length; i++) {
-          if (notes[i] == ' ') {
-            delay(beats[i] * tempo); // rest
-          } 
-          else {
-            playNote(notes[i], beats[i] * tempo);
-          } 
-          // pause between notes
-          delay(tempo / 2); 
-        }
+        winColor(currPlayer->colorId);
+        playSong();
         delay(500);
-        while (true) {} // ends the game
+        while (true) { // ends the game until reset
+        resetButtonState = digitalRead(resetButton);
+
+        if (resetButtonState == LOW) {
+          // Reset player pieces
+          for (int i = 0; i < numPlayers; i++) {
+            Players[i]->currPos = offBoardPos;
+            Players[i]->isHome = true;
+            Players[i]->hasWon = false;
+          }
+
+          // Clear LEDs
+          pixels.clear();
+          pixels.show();
+
+          // Reset LCD
+          lcd.clear();
+          lcd.setCursor(2,0);
+          lcd.print("game reset");
+          delay(2000);
+          lcd.clear();
+
+          // Reinitialize the home bases
+          homeBase();
+          break;
+        }
       }
+    }
 
       // otherwise move to the next player
       currPlayerInd = (currPlayerInd + 1) % numPlayers;
       currPlayer = Players[currPlayerInd];
 
+      // print whose turn on LCD
+      lcd.clear();
       lcd.setCursor(3,0);
+      delay(200);
       lcd.print(currPlayer->colorId);
       lcd.print(" turn");
       delay(300); // debouncer
